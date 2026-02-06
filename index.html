@@ -274,18 +274,32 @@
         }
 
         // Love Meter Logic
-        loveSlider.addEventListener('input', (e) => {
-            const val = parseInt(e.target.value);
-            loveValue.innerText = val;
+        let totalLove = 100;
+        let lastSliderValue = 100;
 
-            if (val > 100) {
-                const overflow = (val - 100) / 1000;
-                loveSlider.style.width = `calc(100% + ${overflow * 100}px)`;
-                meterMessage.innerText = val > 5000 ? "OMG! That's a lot of love! 😍" : "It's growing!!! 📈";
+        loveSlider.addEventListener('input', (e) => {
+            const currentSliderValue = parseInt(e.target.value);
+
+            const diff = Math.abs(currentSliderValue - lastSliderValue);
+            totalLove += diff * 100;
+            lastSliderValue = currentSliderValue;
+
+            loveValue.innerText = totalLove.toLocaleString();
+            const overflow = Math.min(2000, totalLove / 1000);
+            loveSlider.style.width = `calc(100% + ${overflow}px)`;
+
+            if (totalLove > 1000) meterMessage.innerText = "Keep going... MORE LOVE! 🚀";
+            if (totalLove > 50000) meterMessage.innerText = "It's OVERFLOWING!!! 🌊";
+            if (totalLove > 500000) {
+                meterMessage.innerText = "ALMOST AT INFINITY! ✨";
+                meterMessage.classList.add('heartbeat');
+            }
+
+            if (totalLove >= 1000000) {
+                loveValue.innerText = "∞";
+                meterMessage.innerText = "INFINITY REACHED! ❤️";
                 meterNext.classList.remove('hidden');
-            } else {
-                loveSlider.style.width = '100%';
-                meterMessage.innerText = "";
+                meterNext.classList.add('fade-in');
             }
         });
 
@@ -301,11 +315,9 @@
                 const rect = noBtn.getBoundingClientRect();
                 const padding = 20;
 
-                // Interaction point
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
-                // Random safe new position
                 const maxX = window.innerWidth - rect.width - padding;
                 const maxY = window.innerHeight - rect.height - padding;
 
@@ -326,9 +338,8 @@
                 noBtn.style.left = `${newX}px`;
                 noBtn.style.top = `${newY}px`;
 
-                // Update scales
                 yesScale += 0.2;
-                noScale = Math.max(0.4, noScale - 0.1); // Shrink No, but not to zero
+                noScale = Math.max(0.4, noScale - 0.1);
 
                 yesBtn.style.transform = `scale(${yesScale})`;
                 noBtn.style.transform = `scale(${noScale})`;
@@ -370,7 +381,6 @@
             }, 250);
         }
 
-        // Background Animation
         function spawnElements() {
             const container = document.getElementById('elements-container');
             const emojis = ['❤️', '💖', '🧸', '🌹', '✨', '🐻'];
