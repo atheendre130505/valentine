@@ -274,34 +274,64 @@
         }
 
         // Love Meter Logic
+        let isInverted = false;
         let totalLove = 100;
         let lastSliderValue = 100;
+        const maxVal = 10000;
 
         loveSlider.addEventListener('input', (e) => {
-            const currentSliderValue = parseInt(e.target.value);
+            const currentVal = parseInt(e.target.value);
 
-            const diff = Math.abs(currentSliderValue - lastSliderValue);
-            totalLove += diff * 100;
-            lastSliderValue = currentSliderValue;
+            if (!isInverted) {
+                // --- Normal Mode (Dragging Right) ---
+                if (currentVal < lastSliderValue) {
+                    // Oops! You tried to pull back. Flip the logic!
+                    isInverted = true;
+                    loveSlider.style.transform = 'scaleX(-1)';
+                    meterMessage.innerText = "No going back! Love grows both ways! 😉";
+                } else {
+                    totalLove = currentVal;
+                    if (totalLove > 5000) meterMessage.innerText = "Keep going to the edge! ➡️";
+                }
 
-            loveValue.innerText = totalLove.toLocaleString();
-            const overflow = Math.min(2000, totalLove / 1000);
-            loveSlider.style.width = `calc(100% + ${overflow}px)`;
+                // If they hit the far right edge
+                if (currentVal >= maxVal) {
+                    showProceed();
+                }
+            } else {
+                // --- Inverted Mode (Dragging Left INCREASES Love) ---
+                // Moving towards 0 (left) is now the path to infinity
+                totalLove = maxVal + (maxVal - currentVal) * 10;
+                meterMessage.innerText = "Now left to the edge! ⬅️";
 
-            if (totalLove > 1000) meterMessage.innerText = "Keep going... MORE LOVE! 🚀";
-            if (totalLove > 50000) meterMessage.innerText = "It's OVERFLOWING!!! 🌊";
-            if (totalLove > 500000) {
-                meterMessage.innerText = "ALMOST AT INFINITY! ✨";
-                meterMessage.classList.add('heartbeat');
+                // If they hit the far left edge
+                if (currentVal <= 0) {
+                    showProceed();
+                }
             }
 
-            if (totalLove >= 1000000) {
+            lastSliderValue = currentVal;
+
+            // Format and Display
+            if (totalLove >= 100000) {
                 loveValue.innerText = "∞";
                 meterMessage.innerText = "INFINITY REACHED! ❤️";
-                meterNext.classList.remove('hidden');
-                meterNext.classList.add('fade-in');
+            } else {
+                loveValue.innerText = totalLove.toLocaleString();
             }
+
+            // Visual expansion effect
+            const expansion = Math.min(600, (totalLove / 100));
+            loveSlider.style.width = `calc(100% + ${expansion}px)`;
         });
+
+        function showProceed() {
+            loveValue.innerText = "∞";
+            meterMessage.innerText = "BEYOND INFINITY! ❤️";
+            meterNext.classList.remove('hidden');
+            meterNext.classList.add('fade-in');
+            loveSlider.disabled = true;
+        }
 
         function toProposalStage() {
             meterCard.classList.add('hidden');
