@@ -281,13 +281,16 @@
         const maxVal = 10000;
 
         loveSlider.addEventListener('input', (e) => {
-            const currentVal = parseInt(e.target.value);
+            let currentVal = parseInt(e.target.value);
 
             if (!isInverted) {
                 // --- Normal Mode (Dragging Right) ---
                 if (currentVal < lastSliderValue) {
-                    // Oops! You tried to pull back. Flip the logic!
+                    // Pull back detected! Flip everything.
                     isInverted = true;
+                    // Adjust value so thumb stays under finger/cursor
+                    currentVal = maxVal - currentVal;
+                    loveSlider.value = currentVal;
                     loveSlider.style.transform = 'scaleX(-1)';
                     meterMessage.innerText = "No going back! Love grows both ways! 😉";
                 } else {
@@ -295,23 +298,17 @@
                     if (totalLove > 5000) meterMessage.innerText = "Keep going to the edge! ➡️";
                 }
 
-                // If they hit the far right edge
-                if (currentVal >= maxVal) {
-                    showProceed();
-                }
+                if (currentVal >= maxVal) showProceed();
             } else {
-                // --- Inverted Mode (Dragging Left INCREASES Love) ---
-                // Moving towards 0 (left) is now the path to infinity
-                totalLove = maxVal + (maxVal - currentVal) * 10;
-                meterMessage.innerText = "Now left to the edge! ⬅️";
+                // --- Inverted Mode (Dragging Left INCREASES Value) ---
+                // In scaleX(-1) mode, dragging to the left increases the slider 'value' 
+                totalLove = maxVal + currentVal * 10;
+                meterMessage.innerText = "All the way to the left now! ⬅️";
 
-                // If they hit the far left edge
-                if (currentVal <= 0) {
-                    showProceed();
-                }
+                if (currentVal >= maxVal) showProceed();
             }
 
-            lastSliderValue = currentVal;
+            lastSliderValue = parseInt(loveSlider.value);
 
             // Format and Display
             if (totalLove >= 100000) {
